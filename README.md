@@ -1,78 +1,122 @@
-# Voxie - AI Voice Agent Platform
+# Voxie — AI Voice Agent Platform
 
-Voxie is an intelligent voice AI platform that helps businesses create custom voice agents. It features a multi-agent system where "Voxie" (the agent creator) guides users through building tailored voice agents for their specific business needs.
+Voxie is a multi-agent voice AI platform that lets businesses create, manage, and deploy custom voice agents. A meta-agent called **"Voxie"** guides users through a conversational setup process to build tailored voice agents (e.g. customer support, sales, booking) that are stored in a database and can be launched on demand. Users interact with agents via real-time voice calls powered by LiveKit.
 
-## 🌟 Features
+## Key Features
 
-- **Multi-Agent System**: Voxie creates and manages custom voice agents dynamically
-- **Real-Time Voice Communication**: Powered by LiveKit for low-latency voice interactions
-- **Agent Persistence**: Save and reproduce agents from database
-- **Call Analytics**: Automatic call tracking, transcription, and AI-generated summaries
-- **Knowledge Base Integration**: Agents can search and answer from company knowledge bases
-- **Dashboard & API**: Full REST API with real-time SSE logging for frontend integration
+- **Conversational Agent Builder** — Voxie walks you through creating a custom voice agent via voice conversation
+- **Real-Time Voice Calls** — Low-latency WebRTC audio via LiveKit Cloud
+- **Agent Persistence** — Agent configs saved to Supabase and reproducible from database
+- **Call Analytics** — Automatic call session tracking, conversation transcription, and AI-generated summaries
+- **Knowledge Base (RAG)** — Agents can search and answer from company knowledge bases via Ragie
+- **REST API + Dashboard** — FastAPI backend with full CRUD, analytics, and a browser-based dashboard
+- **SSE Log Streaming** — Real-time agent creation progress via Server-Sent Events
 
-## 📋 Prerequisites
+## Architecture
 
-- **Python 3.11+**
-- **uv** (Python package installer) - [Install uv](https://github.com/astral-sh/uv)
-- **Node.js 18+** (if using frontend dashboard)
-- **Supabase Account** - [Create account](https://supabase.com)
-- **LiveKit Cloud Account** - [Create account](https://livekit.io)
-- **OpenAI API Key** - [Get API key](https://platform.openai.com)
-- **Deepgram API Key** (optional, for transcription) - [Get API key](https://deepgram.com)
+```
+┌──────────────────────────┐
+│   Browser / Frontend     │
+│  (HTML call interface)   │
+└──────┬──────────┬────────┘
+       │ HTTPS    │ WebRTC (voice)
+       ▼          ▼
+┌────────────┐  ┌──────────────┐
+│  Backend   │  │ LiveKit Cloud│
+│  (FastAPI) │  │  (voice infra)│
+└─────┬──────┘  └──────┬───────┘
+      │                │
+      ▼                ▼
+┌────────────┐  ┌──────────────┐
+│ Supabase   │  │ Voxie Agents │
+│ (Postgres) │◄─│  (Python)    │
+└────────────┘  └──────────────┘
+```
 
-## 🚀 Quick Start
+- **Frontend** → Backend API for data/analytics, LiveKit for voice
+- **Backend** → Supabase for agent configs & call data
+- **Agents** → Join LiveKit rooms, talk via OpenAI Realtime API, save transcripts to Supabase
+
+## Tech Stack
+
+| Layer                | Technology                     |
+| -------------------- | ------------------------------ |
+| Voice Infrastructure | LiveKit Cloud (WebRTC)         |
+| AI / LLM             | OpenAI GPT-4o / Realtime API   |
+| Speech-to-Text       | Deepgram                       |
+| Text-to-Speech       | Cartesia                       |
+| Backend API          | Python 3.11+, FastAPI, Uvicorn |
+| Database             | Supabase (PostgreSQL)          |
+| Knowledge Base       | Ragie (RAG)                    |
+| Agent Framework      | LiveKit Agents SDK             |
+
+---
+
+## Prerequisites
+
+Before you start, create accounts and get API keys from:
+
+| Service                   | What You Need              | Sign Up                                            |
+| ------------------------- | -------------------------- | -------------------------------------------------- |
+| **OpenAI**                | API key (`sk-proj-...`)    | [platform.openai.com](https://platform.openai.com) |
+| **LiveKit Cloud**         | API key, secret, and URL   | [livekit.io](https://livekit.io)                   |
+| **Supabase**              | Project URL and anon key   | [supabase.com](https://supabase.com)               |
+| **Deepgram** _(optional)_ | API key for transcription  | [deepgram.com](https://deepgram.com)               |
+| **Ragie** _(optional)_    | API key for knowledge base | [ragie.ai](https://ragie.ai)                       |
+
+**Local tools:**
+
+- **Python 3.11+** — [python.org](https://www.python.org/downloads/)
+- **uv** (fast Python package manager) — `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- **Git**
+
+---
+
+## Setup
 
 ### 1. Clone the Repository
 
 ```bash
 git clone <your-repo-url>
-cd voxie-clean
+cd voxie
 ```
 
-### 2. Install Dependencies
+### 2. Create Environment File
+
+Copy the example and fill in your credentials:
 
 ```bash
-# Install Python dependencies using uv
-uv pip install -r requirements.txt
-
-# Install backend dependencies (for REST API server)
-uv pip install -r requirements-backend.txt
+cp .env.example .env.local
 ```
 
-### 3. Configure Environment Variables(Find everything in Notion or Ask daniel)
-
-Create a `.env.local` file in the root directory:
+Edit `.env.local` with your actual values:
 
 ```bash
-# Supabase Configuration
-SUPABASE_URL="https://your-project.supabase.co"
-SUPABASE_ANON_KEY="your-supabase-anon-key"
-
 # LiveKit Configuration
-LIVEKIT_API_KEY="your-livekit-api-key"
-LIVEKIT_API_SECRET="your-livekit-api-secret"
-LIVEKIT_URL="wss://your-livekit-deployment.livekit.cloud"
+LIVEKIT_URL=wss://your-project.livekit.cloud
+LIVEKIT_API_KEY=your-api-key
+LIVEKIT_API_SECRET=your-api-secret
 
-# OpenAI Configuration
-OPENAI_API_KEY="sk-proj-your-openai-api-key"
+# Supabase Configuration
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-supabase-anon-key
 
-# Deepgram Configuration (Optional)
-DEEPGRAM_API_KEY="your-deepgram-api-key"
+# API Keys
+OPENAI_API_KEY=sk-proj-your-openai-key
+DEEPGRAM_API_KEY=your-deepgram-key          # optional
+RAGIE_API_KEY=your-ragie-key                # optional
+ANTHROPIC_API_KEY=sk-ant-your-anthropic-key # optional
 
-# Agent Configuration (Optional - for loading specific agents)
-AGENT_ID="agent-id-from-database"
-
-# Backend Logging Configuration (Optional - for real-time status streaming)
-ENABLE_BACKEND_LOGGING="true"
-BACKEND_URL="http://localhost:8000"
+# Backend Configuration
+BACKEND_URL=http://localhost:8000
+ENABLE_BACKEND_LOGGING=true
 ```
 
-### 4. Set Up Supabase Database
+> **Note:** The backend loads `.env.local` first, then falls back to `.env`, then system env vars.
 
-#### Create Required Tables
+### 3. Set Up Supabase Database
 
-Run these SQL commands in your Supabase SQL editor:
+Run these SQL commands in your Supabase dashboard → SQL Editor:
 
 ```sql
 -- Agents table (stores agent configurations)
@@ -145,7 +189,7 @@ CREATE TABLE call_summaries (
     generated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Create indexes for performance
+-- Indexes for performance
 CREATE INDEX idx_call_sessions_agent_id ON call_sessions(agent_id);
 CREATE INDEX idx_call_sessions_started_at ON call_sessions(started_at);
 CREATE INDEX idx_conversation_turns_call_session_id ON conversation_turns(call_session_id);
@@ -153,335 +197,213 @@ CREATE INDEX idx_token_usage_call_session_id ON token_usage(call_session_id);
 CREATE INDEX idx_call_summaries_call_session_id ON call_summaries(call_session_id);
 ```
 
-## 🧪 Testing Locally
+### 4. Install Dependencies
 
-### Option 1: Run Voxie Agent Creator (Development Mode)
-
-This starts the multi-agent system where Voxie helps create custom agents:
+The project has two separate Python environments:
 
 ```bash
-# Start Voxie in development mode (auto-joins new LiveKit rooms)
+# 1. Root — Backend API dependencies
+pip install -r requirements.txt
+
+# 2. voxie-test — Agent runtime dependencies (managed by uv)
 cd voxie-test
-uv run python src/agent.py dev
+uv sync
+cd ..
 ```
 
-**What this does:**
-- Starts Voxie agent
-- Auto-joins any new LiveKit rooms
-- Guides users through creating custom voice agents
-- Saves agents to database
-- Generates call summaries for calls >3 minutes
+---
 
-**Test it:**
-1. Create a LiveKit room using your LiveKit dashboard or API
-2. Join the room with a client (web/mobile)
-3. Speak with Voxie to create a custom agent
-4. Test the created agent in demo mode
+## Running Locally
 
-### Option 2: Run Specific Agent by ID
-
-Load and run a pre-configured agent from the database:
+### Start the Backend API Server
 
 ```bash
-# Set the agent ID you want to run
-export AGENT_ID="your-agent-id-from-database"
-
-# Start the specific agent in development mode
-cd voxie-test
-uv run python src/agent.py dev
-```
-
-### Option 3: Run Backend API Server
-
-Start the FastAPI backend for dashboard and API access:
-
-```bash
-# Start backend server
 python backend_server.py
-
-# Server runs on http://localhost:8000
+# → Server runs on http://localhost:8000
 ```
 
-**Available Endpoints:**
+### Start the Voice Agent (Voxie)
 
-- `GET /` - Health check
-- `GET /api/agents` - List all agents
-- `GET /api/agents/{agent_id}` - Get specific agent
-- `PUT /api/agents/{agent_id}` - Update agent
-- `DELETE /api/agents/{agent_id}` - Delete agent
-- `GET /api/analytics/summary` - Get analytics summary
-- `GET /api/analytics/recent-calls` - Get recent call history
-- `GET /api/agents/create-stream/{session_id}` - SSE stream for real-time logs
-
-**Test the API:**
+In a separate terminal:
 
 ```bash
-# List all agents
-curl http://localhost:8000/api/agents
-
-# Get analytics summary
-curl http://localhost:8000/api/analytics/summary
-
-# Get recent calls
-curl http://localhost:8000/api/analytics/recent-calls
-```
-
-### Option 4: Test with Dashboard Frontend
-
-```bash
-# Open the dashboard in your browser
-open http://localhost:8000/dashboard
-```
-
-The dashboard allows you to:
-- View all created agents
-- View call analytics (from Voxie interactions)
-- See call summaries and statistics
-
-**Note:** To interact with Voxie and create agents, you'll need to connect through a LiveKit room using Option 1 or 2 above.
-
-## 🏗️ Production Deployment
-
-### Deploy Backend Server
-
-#### Option A: Deploy to Cloud Platform (e.g., Railway, Render, Fly.io)
-
-1. **Prepare for deployment:**
-
-```bash
-# Ensure all dependencies are in requirements files
-uv pip freeze > requirements.txt
-```
-
-2. **Set environment variables** in your cloud platform:
-   - All variables from `.env.local`
-   - `PORT=8000` (or your platform's default)
-
-3. **Deploy command:**
-
-```bash
-# Most platforms auto-detect and run:
-python backend_server.py
-```
-
-4. **Update BACKEND_URL** in your production `.env`:
-
-```bash
-BACKEND_URL="https://your-backend-domain.com"
-```
-
-#### Option B: Deploy with Docker
-
-```dockerfile
-# Dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-
-# Install uv
-RUN pip install uv
-
-# Copy requirements
-COPY requirements.txt requirements-backend.txt ./
-
-# Install dependencies
-RUN uv pip install --system -r requirements.txt
-RUN uv pip install --system -r requirements-backend.txt
-
-# Copy application code
-COPY . .
-
-# Expose port
-EXPOSE 8000
-
-# Run backend
-CMD ["python", "backend_server.py"]
-```
-
-```bash
-# Build and run
-docker build -t voxie-backend .
-docker run -p 8000:8000 --env-file .env.local voxie-backend
-```
-
-### Deploy Voice Agents
-
-#### Development Mode
-
-For development and testing, agents automatically connect when rooms are created:
-
-```bash
-# Run Voxie in development mode (auto-joins any new room)
 cd voxie-test
 uv run python src/agent.py dev
 ```
 
-#### Production Mode (Single Process per Call)
+This starts Voxie in dev mode — it auto-joins any new LiveKit room. When a user connects, Voxie guides them through creating a custom voice agent.
 
-For production deployments, you can manually run specific agents:
-
-```bash
-# Start a specific agent for a specific room
-AGENT_ID="agent-id" ROOM_NAME="room-name" python simple_agent.py
-```
-
-#### Scaling Strategy
-
-For high-traffic production:
-
-1. **Deploy backend API** to cloud platform (handles HTTP requests & analytics)
-2. **Deploy Voxie agents** to compute instances (handle voice interactions)
-3. **Connect via LiveKit** rooms for real-time voice communication
-4. **Auto-scale agent workers** based on active room count
-
-Example architecture:
-
-```
-Frontend Dashboard → Backend API (Analytics & Agent CRUD)
-                          ↓
-                      Supabase DB (Agent configs & call data)
-
-User → LiveKit Rooms → Voxie Agents (deployed separately)
-```
-
-**Note:** The dashboard is for viewing agent configurations and analytics only. Users interact with Voxie by joining LiveKit rooms directly.
-
-## 📊 Database Analytics
-
-### View Call Summaries
+### Start a Specific Agent by ID
 
 ```bash
-# Run analytics scripts
-python -c "
-import sys
-sys.path.append('./function_call')
-from supabase_client import supabase_client
-
-# Get recent summaries
-result = supabase_client.client.table('call_summaries')\
-    .select('*')\
-    .order('generated_at', desc=True)\
-    .limit(5)\
-    .execute()
-
-for summary in result.data:
-    print(f\"📞 {summary['call_category']}: {summary['business_outcome']}\")
-    print(f\"   Summary: {summary['summary_text']}\")
-    print()
-"
+export AGENT_ID="your-agent-uuid"
+cd voxie-test
+uv run python src/agent.py dev
 ```
 
-### Check Call Statistics
+### Test via Browser
 
-```python
-# check_calls.py
-import sys
-sys.path.append('./function_call')
-from supabase_client import supabase_client
+1. Open `http://localhost:8000/call` for the voice call interface
+2. Open `http://localhost:8000/dashboard` for the agent dashboard
+3. Or open `simple_call_interface.html` directly in your browser
 
-# Count all call sessions
-all_calls = supabase_client.client.table('call_sessions').select('id', count='exact').execute()
-print(f"📞 Total call sessions: {all_calls.count}")
+---
 
-# Count completed calls
-completed = supabase_client.client.table('call_sessions').select('id', count='exact').eq('call_status', 'completed').execute()
-print(f"✅ Completed calls: {completed.count}")
+## API Reference
 
-# Count summaries
-summaries = supabase_client.client.table('call_summaries').select('id', count='exact').execute()
-print(f"📝 Call summaries: {summaries.count}")
+All endpoints run on `http://localhost:8000`:
+
+### Health & Dashboard
+
+| Method | Endpoint     | Description                     |
+| ------ | ------------ | ------------------------------- |
+| `GET`  | `/`          | Health check                    |
+| `GET`  | `/dashboard` | Serves the agent dashboard UI   |
+| `GET`  | `/call`      | Serves the voice call interface |
+
+### Agent CRUD
+
+| Method   | Endpoint             | Description                       |
+| -------- | -------------------- | --------------------------------- |
+| `GET`    | `/api/agents`        | List all agents                   |
+| `GET`    | `/api/agents/{id}`   | Get agent by ID                   |
+| `PUT`    | `/api/agents/{id}`   | Update agent (partial)            |
+| `DELETE` | `/api/agents/{id}`   | Delete agent                      |
+| `POST`   | `/api/agents/create` | Create agent (returns session_id) |
+
+### Voice Calls
+
+| Method | Endpoint          | Description                                       |
+| ------ | ----------------- | ------------------------------------------------- |
+| `POST` | `/api/call/start` | Start a call (creates LiveKit room, spawns agent) |
+| `POST` | `/api/call/end`   | End a call session                                |
+
+### Analytics
+
+| Method | Endpoint                      | Description                        |
+| ------ | ----------------------------- | ---------------------------------- |
+| `GET`  | `/api/analytics/summary`      | Today's call stats, costs, ratings |
+| `GET`  | `/api/analytics/recent-calls` | Recent call history                |
+
+### SSE Streaming
+
+| Method | Endpoint                                 | Description                         |
+| ------ | ---------------------------------------- | ----------------------------------- |
+| `GET`  | `/api/agents/create-stream/{session_id}` | Real-time agent creation logs (SSE) |
+
+---
+
+## Project Structure
+
+```
+voxie/
+├── backend_server.py              # FastAPI backend API server
+├── simple_agent.py                # Production agent runner (single process)
+├── backend_log_handler.py         # Real-time log streaming helper
+├── event_logger.py                # Event logging utility
+│
+├── voxie-test/                    # Voice agent runtime
+│   ├── src/
+│   │   ├── agent.py               # Main multi-agent system (Voxie)
+│   │   ├── agent_persistence.py   # Agent save/load from DB
+│   │   ├── call_analytics.py      # Call tracking & analytics
+│   │   ├── call_records_manager.py # Call record management
+│   │   ├── transcription_handler.py # Transcription & summarization
+│   │   ├── knowledge_base_tools.py # Knowledge base integration
+│   │   ├── analytics_dashboard.py # Analytics dashboard logic
+│   │   ├── supabase_client.py     # Supabase DB client
+│   │   ├── ragie_db_tool.py       # Ragie RAG integration
+│   │   └── ragie_voice_agent.py   # RAG-enabled voice agent
+│   ├── pyproject.toml             # Agent dependencies (uv)
+│   └── Dockerfile                 # Agent container for deployment
+│
+├── function_call/                 # Shared utilities
+│   ├── supabase_client.py         # Supabase client (used by backend)
+│   ├── agent_persistence.py       # Agent CRUD operations
+│   ├── ragie_db_tool.py           # Ragie RAG tool
+│   ├── ragie_voice_agent.py       # RAG voice agent
+│   ├── voice_agent_function.py    # Voice agent function tools
+│   ├── voice_agent_hybrid.py      # Hybrid voice agent
+│   └── webhook_server.py          # Webhook server
+│
+├── agent_dashboard.html           # Agent management dashboard
+├── simple_call_interface.html     # Browser voice call interface
+├── simple_call_interface_cloud.html # Cloud-configured call interface
+├── frontend_demo.html             # SSE log viewer demo
+│
+├── .env.example                   # Environment variable template
+├── requirements.txt               # Backend Python dependencies
+├── requirements-backend.txt       # Backend-only minimal deps
+├── Procfile                       # Railway start command
+├── railway.toml                   # Railway deployment config
+└── runtime.txt                    # Python version for deployment
 ```
 
-## 🔧 Troubleshooting
+---
 
-### Common Issues
+## Deployment (Railway)
 
-**Issue: Agent not connecting to LiveKit**
+### 1. Push to GitHub
+
 ```bash
-# Check LiveKit credentials
-echo $LIVEKIT_URL
-echo $LIVEKIT_API_KEY
-
-# Test LiveKit connection
-curl -X POST "$LIVEKIT_URL/twirp/livekit.RoomService/CreateRoom" \
-  -H "Authorization: Bearer $(python -c 'from livekit import api; print(api.AccessToken(\"$LIVEKIT_API_KEY\", \"$LIVEKIT_API_SECRET\").to_jwt())')"
+git add .
+git commit -m "Ready for deployment"
+git push origin main
 ```
 
-**Issue: Supabase connection fails**
-```python
-# Test Supabase connection
-python -c "
-import os
-from supabase import create_client
-client = create_client(os.getenv('SUPABASE_URL'), os.getenv('SUPABASE_ANON_KEY'))
-print('✅ Supabase connected:', client.table('agents').select('id').limit(1).execute())
-"
-```
+### 2. Deploy on Railway
 
-**Issue: OpenAI API errors**
+1. Go to [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub Repo**
+2. Select your repository
+3. Railway auto-detects Python (via `requirements.txt`) and deploys
+
+### 3. Set Environment Variables
+
+In Railway dashboard → your service → **Variables** tab, add all keys from `.env.example`:
+
+- `SUPABASE_URL`, `SUPABASE_ANON_KEY`
+- `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`
+- `OPENAI_API_KEY`
+
+Click **Deploy** to restart with the new variables.
+
+### 4. Test
+
 ```bash
-# Test OpenAI API key
-curl https://api.openai.com/v1/models \
-  -H "Authorization: Bearer $OPENAI_API_KEY"
+curl https://your-app.railway.app/
+curl https://your-app.railway.app/api/agents
 ```
 
-**Issue: Call summaries not generating**
-- Summaries only generate for calls >3 minutes
-- Check logs for GPT-4o API errors
-- Verify OpenAI API key has GPT-4o access
+### Agent Deployment
 
-### Enable Debug Logging
+The voice agent (`voxie-test/`) runs separately from the backend. Deploy it to a compute instance (AWS EC2, GCP, etc.) or use the included `Dockerfile` in `voxie-test/`:
 
-```python
-# Add to top of agent.py
-import logging
-logging.basicConfig(level=logging.DEBUG)
+```bash
+cd voxie-test
+docker build -t voxie-agent .
+docker run --env-file ../.env.local voxie-agent
 ```
 
-## 📁 Project Structure
+---
 
-```
-voxie-clean/
-├── voxie-test/
-│   └── src/
-│       ├── agent.py                    # Main multi-agent system
-│       ├── call_analytics.py           # Call tracking & analytics
-│       ├── transcription_handler.py    # Transcription & summarization
-│       ├── knowledge_base_tools.py     # Knowledge base integration
-│       └── agent_persistence.py        # Agent storage/loading
-├── function_call/
-│   ├── supabase_client.py             # Supabase database client
-│   └── agent_persistence.py           # Agent CRUD operations
-├── backend_server.py                   # FastAPI REST API server
-├── backend_log_handler.py             # Real-time log streaming
-├── simple_agent.py                    # Production agent runner
-├── .env.local                         # Environment configuration
-├── requirements.txt                   # Python dependencies
-├── requirements-backend.txt           # Backend dependencies
-└── README.md                          # This file
-```
+## Troubleshooting
 
-## 🤝 Contributing
+| Problem                               | Solution                                                                           |
+| ------------------------------------- | ---------------------------------------------------------------------------------- |
+| **Agent not connecting to LiveKit**   | Verify `LIVEKIT_URL`, `LIVEKIT_API_KEY`, and `LIVEKIT_API_SECRET` in `.env.local`  |
+| **Supabase connection fails**         | Check `SUPABASE_URL` and `SUPABASE_ANON_KEY`; verify tables exist                  |
+| **"Could not import backend_server"** | Make sure you're running from the `voxie/` root, not `voxie-test/`                 |
+| **Port 8000 already in use**          | Kill the existing process: `kill $(lsof -ti:8000)`                                 |
+| **Missing Python packages**           | Run `pip install -r requirements.txt` (root) and `uv sync` (in `voxie-test/`)      |
+| **Call summaries not generating**     | Summaries only generate for calls > 3 minutes; verify OpenAI key has GPT-4o access |
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+---
 
-## 📝 License
+## Acknowledgments
 
-[Add your license here]
-
-## 🆘 Support
-
-For issues and questions:
-- Create an issue in the repository
-- Contact: [Your contact information]
-
-## 🙏 Acknowledgments
-
-- **LiveKit** - Real-time voice infrastructure
-- **OpenAI** - GPT-4o for agent intelligence and summaries
-- **Supabase** - Database and backend services
-- **Deepgram** - Speech-to-text transcription
+- [LiveKit](https://livekit.io) — Real-time voice infrastructure
+- [OpenAI](https://openai.com) — GPT-4o for agent intelligence and summaries
+- [Supabase](https://supabase.com) — Database and backend services
+- [Deepgram](https://deepgram.com) — Speech-to-text transcription
+- [Cartesia](https://cartesia.ai) — Text-to-speech
+- [Ragie](https://ragie.ai) — RAG knowledge base
