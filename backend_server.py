@@ -818,6 +818,13 @@ async def serve_dashboard():
     """
     return FileResponse("agent_dashboard.html")
 
+@app.get('/agent/logs')
+async def serve_create_agent():
+    """
+    serve agent logs
+    """
+
+    return FileResponse("frontend_demo.html")
 
 @app.get("/call")
 async def serve_call_interface():
