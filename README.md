@@ -45,6 +45,18 @@ graph TD;
     class LiveKit,OpenAI,Ragie,DB infra;
 ```
 
+## 🚀 Quick Start (5-Minute Test)
+
+Get a basic agent running in minutes to test your infrastructure:
+
+1.  **Configure `.env.local`**: Copy `.env.example` to `.env.local` and add your `OPENAI_API_KEY`, `LIVEKIT_URL`, `LIVEKIT_API_KEY`, and `LIVEKIT_API_SECRET`.
+2.  **Start Backend**: `python backend_server.py`
+3.  **Start Agent**: `cd voxie-test && uv run python src/agent.py dev`
+4.  **Open Interface**: Visit `http://localhost:8000/call` in your browser.
+5.  **Talk!**: Speak to the default agent. It should respond and start guiding you.
+
+---
+
 ## 🚀 Key Technical Features
 
 - **Conversational Meta-Agent Builder** — Dynamically generate agent configurations purely through voice conversation.
@@ -215,16 +227,49 @@ CREATE INDEX idx_call_summaries_call_session_id ON call_summaries(call_session_i
 
 ### 4. Install Dependencies
 
-The project has two separate Python environments:
+The project uses two separate Python environments to keep the API server and agent runtime isolated:
+
+#### **4.1 Backend API Setup (Root)**
+
+The backend manages the REST API, Supabase integration, and dashboard.
 
 ```bash
-# 1. Root — Backend API dependencies
+# From the project root
+python -m venv .venv
+source .venv/bin/activate  # Mac/Linux
 pip install -r requirements.txt
+```
 
-# 2. voxie-test — Agent runtime dependencies (managed by uv)
+#### **4.2 Agent Runtime Setup (voxie-test)**
+
+The agent runtime handles real-time audio and OpenAI orchestration. It uses `uv` for managed performance.
+
+```bash
+# From the project root
 cd voxie-test
 uv sync
 cd ..
+```
+
+---
+
+## 🧪 Testing & Demos
+
+Once both services are running, use these interfaces to test the platform:
+
+| Interface           | URL                                               | Description                                     |
+| :------------------ | :------------------------------------------------ | :---------------------------------------------- |
+| **Voice Interface** | `http://localhost:8000/call`                      | Start a call with the AI and create new agents. |
+| **Agent Dashboard** | `http://localhost:8000/dashboard`                 | Manage, edit, and delete existing agents.       |
+| **Log Stream Demo** | `http://localhost:8000/static/frontend_demo.html` | Watch real-time logs during agent creation.     |
+| **Admin API**       | `http://localhost:8000/`                          | Basic health check and system status.           |
+
+### Automated Health Check
+
+Run the provided test script to verify your deployment:
+
+```bash
+bash test_deployment.sh
 ```
 
 ---
