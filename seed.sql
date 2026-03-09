@@ -461,6 +461,55 @@ INSERT INTO call_summaries (call_session_id, summary_text, key_points, action_it
 );
 
 -- ============================================================
+-- 11. ROW LEVEL SECURITY (RLS) POLICIES
+-- Supabase uses the anon key, which requires explicit RLS
+-- policies to read/write data. Without these, queries return
+-- empty results even though the data exists in the table.
+-- ============================================================
+
+-- AGENTS: full access via anon key
+ALTER TABLE agents ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow full access to agents" ON agents;
+CREATE POLICY "Allow full access to agents" ON agents
+    FOR ALL USING (true) WITH CHECK (true);
+
+-- CALL SESSIONS: full access
+ALTER TABLE call_sessions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow full access to call_sessions" ON call_sessions;
+CREATE POLICY "Allow full access to call_sessions" ON call_sessions
+    FOR ALL USING (true) WITH CHECK (true);
+
+-- CONVERSATION TURNS: full access
+ALTER TABLE conversation_turns ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow full access to conversation_turns" ON conversation_turns;
+CREATE POLICY "Allow full access to conversation_turns" ON conversation_turns
+    FOR ALL USING (true) WITH CHECK (true);
+
+-- TOKEN USAGE: full access
+ALTER TABLE token_usage ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow full access to token_usage" ON token_usage;
+CREATE POLICY "Allow full access to token_usage" ON token_usage
+    FOR ALL USING (true) WITH CHECK (true);
+
+-- CALL SUMMARIES: full access
+ALTER TABLE call_summaries ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow full access to call_summaries" ON call_summaries;
+CREATE POLICY "Allow full access to call_summaries" ON call_summaries
+    FOR ALL USING (true) WITH CHECK (true);
+
+-- PRICING CONFIG: full access
+ALTER TABLE pricing_config ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow full access to pricing_config" ON pricing_config;
+CREATE POLICY "Allow full access to pricing_config" ON pricing_config
+    FOR ALL USING (true) WITH CHECK (true);
+
+-- CALL RECORDS: full access
+ALTER TABLE call_records ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow full access to call_records" ON call_records;
+CREATE POLICY "Allow full access to call_records" ON call_records
+    FOR ALL USING (true) WITH CHECK (true);
+
+-- ============================================================
 -- Done! 🎉
 -- Your database now has:
 --   • 3 sample agents (Car Dealership, Pizzeria, Tech Support)
@@ -469,4 +518,5 @@ INSERT INTO call_summaries (call_session_id, summary_text, key_points, action_it
 --   • Call summaries with business outcomes
 --   • Pricing configuration for OpenAI models
 --   • Dashboard views (daily_cost_summary, active_calls, agent_performance)
+--   • RLS policies allowing API access via anon key
 -- ============================================================
