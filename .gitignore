@@ -58,3 +58,5 @@ secrets.json
 *.pem
 *.key
 *.cert
+
+agent_logs
