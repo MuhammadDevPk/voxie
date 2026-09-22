@@ -379,12 +379,14 @@
                     agents = data.agents.filter(a => a.id !== '');
 
                     const select = document.getElementById('agentSelect');
+                    const builderOption = '<option value="voxie-builder" style="font-weight: bold; color: #764ba2;">✨ Voxie (Agent Builder)</option>';
+                    
                     select.innerHTML = agents.length > 0
-                        ? '<option value="">Select an agent...</option>' +
+                        ? '<option value="">Select an agent...</option>' + builderOption +
                           agents.map(a => `<option value="${a.id}">${a.name}</option>`).join('')
-                        : '<option value="">No active agents available</option>';
+                        : '<option value="">No active agents available</option>' + builderOption;
 
-                    select.disabled = agents.length === 0;
+                    select.disabled = false; // Always allow the builder even if no sub-agents exist
                 } else {
                     throw new Error('No agents found');
                 }
