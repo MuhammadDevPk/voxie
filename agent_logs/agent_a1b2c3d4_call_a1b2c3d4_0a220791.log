@@ -1,0 +1,11 @@
+✅ Ragie knowledge base connected successfully
+📄 Document: Geely EX5_ Comprehensive Product Handbook for the.pdf
+⚠️ Supabase client using system environment variables (Railway/production)
+✅ Supabase connected: https://zjyvcmfexngwrxpsaagv.supabase.co
+⚠️ No .env file found, using system environment variables (Railway/production)
+✅ Loaded agent: Kensington Car Dealership Agent
+🔌 DEBUG: Testing Supabase connection...
+✅ DEBUG: Supabase connection working, found 1 records
+📝 DEBUG: Inserting call session for room: call_a1b2c3d4_0a220791
+🔍 DEBUG: Insert result data: [{'id': 'a7647b8a-d16f-49d9-ad8c-6e4a7f4768ac', 'session_id': 'call_a1b2c3d4_0a220791_4947d77e', 'agent_id': 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'room_name': 'call_a1b2c3d4_0a220791', 'primary_agent_type': 'Kensington Car Dealership Agent', 'customer_name': None, 'customer_phone': None, 'customer_id': None, 'started_at': '2026-04-13T09:16:38.192846+00:00', 'ended_at': None, 'duration_seconds': None, 'call_status': 'active', 'call_rating': None, 'call_rating_reason': None, 'customer_sentiment': None, 'issue_resolved': None, 'agent_transitions': [], 'full_transcript': None, 'recording_url': None, 'audio_quality_score': None, 'latency_avg_ms': None, 'errors_count': 0, 'notes': None}]
+📞 DEBUG: Call started: a7647b8a-d16f-49d9-ad8c-6e4a7f4768ac | Room: call_a1b2c3d4_0a220791
