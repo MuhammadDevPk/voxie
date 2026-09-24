@@ -12,11 +12,15 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, Any, AsyncGenerator
 from contextlib import asynccontextmanager
 
+# from livekit.api import AccessToken, VideoGrants
+from livekit.api import AccessToken, VideoGrants
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, FileResponse
 from pydantic import BaseModel
 import uvicorn
+
+import supabase
 
 # Load environment variables from .env.local
 from dotenv import load_dotenv
@@ -221,7 +225,7 @@ async def list_all_agents():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching agents: {str(e)}")
 
-@app.get("/api/agents/{agent_id}")
+@app.get("/api/agents/{agent_id}") #get specific agent
 async def get_agent(agent_id: str):
     """
     Get a specific agent by ID
@@ -413,14 +417,43 @@ async def get_recent_calls(limit: int = 10):
         logging.error(f"Failed to get recent calls: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to get recent calls: {str(e)}")
 
+# from livekit.api import AccessToken, VideoGrant
+@app.get("/api/livekit/token")
+async def livekit_token(room: str, voice: Optional[str] = None):
+    key, secret = os.getenv("LIVEKIT_API_KEY"), os.getenv("LIVEKIT_API_SECRET")
+    if not key or not secret:
+        return {"error": "missing LIVEKIT_API_KEY or LIVEKIT_API_SECRET"}
+    at = AccessToken(key, secret, identity=f"user-{uuid.uuid4().hex[:6]}")
+    at.add_grant(VideoGrants(room=room))
+    return {"token": at.to_jwt()}
+
+@app.get("/chat/agent")
+async def serve_chat_agent():
+    """
+    Serve the chat agent HTML
+    """
+    return FileResponse("../ex2/simple_call_interface.html")
+
+@app.get("/chat/agent/2")
+async def serve_chat_agent_2():
+    """
+    Serve the chat agent HTML
+    """
+    return FileResponse("../ex2/simple_call_interface_2.html")
 
 @app.get("/dashboard")
 async def serve_dashboard():
     """
     Serve the dashboard HTML
     """
-    return FileResponse("dashboard.html")
+    return FileResponse("../frontend_demo.html")
 
+@app.get("/admin/dashboard")
+async def serve_agent_dashboard():
+    """
+    Serve the agent dashboard HTML
+    """
+    return FileResponse("../agent_dashboard.html")
 
 if __name__ == "__main__":
     logging.basicConfig(
